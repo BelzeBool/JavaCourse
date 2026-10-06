@@ -15,8 +15,12 @@
 Запуск:  python3 tools/preview.py           (нужны пакеты: pip install markdown-it-py pyyaml)
 Открыть: build/preview/index.html
 
+Один файл на урок (удобно переслать или открыть на телефоне):
+         python3 tools/preview.py --bundle s01_basics/l02_variables   → build/lesson-l02_variables.html
+
 Превью — приближение. Последнее слово за Course Preview в IntelliJ.
 """
+import base64
 import html
 import json
 import os
@@ -202,23 +206,31 @@ def rewrite_links(h, task_dir, page_of):
     return h
 
 
-def images(h, task_dir, out_dir):
+def images(h, task_dir, out_dir, inline=False):
+    """Копирует картинки рядом со страницей (или встраивает их в HTML при inline=True)."""
+    def data_uri(f):
+        mime = "image/svg+xml" if f.suffix == ".svg" else "image/" + f.suffix.lstrip(".")
+        return f"data:{mime};base64," + base64.b64encode(f.read_bytes()).decode()
+
     def rep(m):
         src = m.group(2)
         if src.startswith(("http:", "https:", "data:")):
             return m.group(0)
         f = task_dir / src
-        if f.exists():
-            dst = out_dir / src
-            dst.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(f, dst)
-            dark = f.with_name(f.stem + "_dark" + f.suffix)
-            extra = ""
-            if dark.exists():
-                shutil.copy2(dark, dst.with_name(dark.name))
-                extra = f' data-pv-dark="{os.path.dirname(src) + "/" if os.path.dirname(src) else ""}{dark.name}"'
-            return f'{m.group(1)}src="{src}"{extra}'
-        return f'{m.group(1)}src="{src}" data-pv-missing="1"'
+        if not f.exists():
+            return f'{m.group(1)}src="{src}" data-pv-missing="1"'
+        dark = f.with_name(f.stem + "_dark" + f.suffix)
+        if inline:
+            extra = f' data-pv-dark="{data_uri(dark)}" data-pv-light="{data_uri(f)}"' if dark.exists() else ""
+            return f'{m.group(1)}src="{data_uri(f)}"{extra}'
+        dst = out_dir / src
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(f, dst)
+        extra = ""
+        if dark.exists():
+            shutil.copy2(dark, dst.with_name(dark.name))
+            extra = f' data-pv-dark="{os.path.dirname(src) + "/" if os.path.dirname(src) else ""}{dark.name}"'
+        return f'{m.group(1)}src="{src}"{extra}'
     return re.sub(r'(<img\b[^>]*?)src="([^"]+)"', rep, h)
 
 
@@ -343,7 +355,92 @@ html.pv-dark .alert-primary{background:#25324D;border-color:#35528A}html.pv-dark
 """
 
 
+def render_step(t, out_dir, page_of, inline=False):
+    md_path = t["dir"] / "task.md"
+    src = md_path.read_text(encoding="utf-8") if md_path.exists() else "<p><i>Нет task.md</i></p>"
+    h = md.render(src)
+    h = cut_out_header(h)
+    h = wrap_hints(h)
+    h = highlight_code(h)
+    h = shortcuts(h)
+    h = rewrite_links(h, t["dir"], page_of)
+    h = images(h, t["dir"], out_dir, inline)
+    if inline:
+        h = re.sub(r'<script src="[^"]*lesson-kit/kit\.js"></script>', "", h)
+    else:
+        h = kit_script(h, out_dir)
+    return h
+
+
+BUNDLE = """<!doctype html>
+<html lang="ru" class="pv-light"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{title}</title><style>{css}
+.pv-step{{box-sizing:border-box;width:var(--pv-w,480px);max-width:100%;margin:22px auto 0;padding:4px 16px 18px;border:1px solid var(--line);border-radius:10px;background:var(--bg)}}
+.pv-stepno{{font-size:11px;color:var(--muted);margin-top:10px;letter-spacing:.06em;text-transform:uppercase}}
+.pv-step details.pv-ed>summary{{cursor:pointer;color:var(--muted);font-size:12px;margin-top:14px}}
+.pv-intro{{box-sizing:border-box;width:var(--pv-w,480px);max-width:100%;margin:18px auto 0;color:var(--muted);font-size:12.5px}}
+body{{padding-bottom:60px}}
+</style></head><body>
+<div class="pv-top"><b>{title}</b><span class="pv-right">
+<button id="pv-theme">◐ Тема</button>
+<select id="pv-w"><option value="400">панель 400 px</option><option value="480" selected>панель 480 px</option><option value="600">панель 600 px</option></select></span></div>
+<div class="pv-intro">Превью урока: так шаги выглядят в панели задания IntelliJ. Кнопки Check у вопросов работают,
+интерактивные схемы — тоже. Код в редакторе — под каждым шагом («Редактор»).</div>
+{steps}
+<script>{kit}</script>
+<script>
+(function(){{
+var root=document.documentElement;
+function theme(t){{root.className='pv-'+t;root.setAttribute('data-k-theme',t);
+document.querySelectorAll('img[data-pv-dark]').forEach(function(i){{i.src=i.getAttribute(t=='dark'?'data-pv-dark':'data-pv-light');}});}}
+document.getElementById('pv-theme').onclick=function(){{theme(root.className=='pv-dark'?'light':'dark');}};
+document.getElementById('pv-w').onchange=function(){{root.style.setProperty('--pv-w',this.value+'px');}};
+document.querySelectorAll('.pv-choice').forEach(function(c){{var msg=JSON.parse(c.getAttribute('data-msg'));
+c.querySelector('.pv-check').onclick=function(){{var ok=true;c.querySelectorAll('input').forEach(function(i){{if((i.checked?1:0)!=+i.getAttribute('data-ok'))ok=false;}});
+var r=c.querySelector('.pv-result');r.textContent=ok?msg.ok:msg.no;r.className='pv-result '+(ok?'pv-ok':'pv-no');}};}});
+if(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)theme('dark');
+}})();
+</script></body></html>"""
+
+
+def bundle(lesson_rel):
+    """Один самодостаточный HTML со всеми шагами урока: картинки и kit.js внутри."""
+    course, tree = course_tree()
+    target = (ROOT / lesson_rel).resolve()
+    for sec in tree:
+        for les in sec["lessons"]:
+            if les["dir"].resolve() != target:
+                continue
+            page_of = {t["dir"].resolve(): OUT / "x" for t in les["tasks"]}
+            parts = []
+            for n, t in enumerate(les["tasks"], 1):
+                h = render_step(t, OUT, page_of, inline=True)
+                choice = choice_block(t["info"]).replace('name="o"', f'name="o{n}"')
+                files = student_files(t)
+                editor = ""
+                if files:
+                    editor = '<details class="pv-ed"><summary>Редактор (глазами ученика)</summary>' + "".join(
+                        f'<div class="pv-file"><div class="pv-file-h">{html.escape(fn)}</div><pre>{c}</pre></div>'
+                        for fn, c in files) + "</details>"
+                parts.append(f'<section class="pv-step"><div class="pv-stepno">Шаг {n} из {len(les["tasks"])} · '
+                             f'{TYPE_NAME.get(t["type"], t["type"])}</div>'
+                             f'<h1 class="pv-title">{TYPE_ICON.get(t["type"], "")} {html.escape(t["name"])}</h1>'
+                             f'<div class="pv-content">{h}</div>{choice}{editor}</section>')
+            OUT.mkdir(parents=True, exist_ok=True)
+            out = ROOT / "build" / f"lesson-{target.name}.html"
+            out.write_text(BUNDLE.format(title=html.escape(les["name"]), css=CSS, steps="".join(parts),
+                                         kit=(ROOT / "lesson-kit" / "kit.js").read_text(encoding="utf-8")
+                                         .replace("</script", "<\\/script")),
+                           encoding="utf-8")
+            print(f"Готово: {out.relative_to(ROOT)}")
+            return 0
+    print(f"Урок {lesson_rel} не найден в course-info.yaml")
+    return 1
+
+
 def main():
+    if len(sys.argv) > 2 and sys.argv[1] == "--bundle":
+        return bundle(sys.argv[2])
     course, tree = course_tree()
     if OUT.exists():
         shutil.rmtree(OUT)
@@ -364,16 +461,7 @@ def main():
     for i, (sec, les, t, page) in enumerate(flat):
         out_dir = page.parent
         out_dir.mkdir(parents=True, exist_ok=True)
-        md_path = t["dir"] / "task.md"
-        src = md_path.read_text(encoding="utf-8") if md_path.exists() else "<p><i>Нет task.md</i></p>"
-        h = md.render(src)
-        h = cut_out_header(h)
-        h = wrap_hints(h)
-        h = highlight_code(h)
-        h = shortcuts(h)
-        h = rewrite_links(h, t["dir"], page_of)
-        h = images(h, t["dir"], out_dir)
-        h = kit_script(h, out_dir)
+        h = render_step(t, out_dir, page_of)
         if "data-pv-missing" in h:
             problems.append(f"{t['dir'].relative_to(ROOT)}: картинка не найдена")
         steps = "".join(
