@@ -89,6 +89,12 @@ def sync_images(task_dir: Path) -> None:
     print(f"img {task_dir.relative_to(ROOT)}: +{len(missing)}")
 
 
+# python3 tools/finalize.py                          — весь курс
+# python3 tools/finalize.py s01_basics/l03_arithmetic — только этот урок (или раздел, или задача)
+only = [(ROOT / a).resolve() for a in sys.argv[1:]]
 for info in sorted(ROOT.glob("s*/*/*/task-info.yaml")):
+    task_dir = info.parent.resolve()
+    if only and not any(task_dir == o or o in task_dir.parents for o in only):
+        continue
     process_task(info.parent)
     sync_images(info.parent)

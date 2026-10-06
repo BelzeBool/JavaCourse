@@ -3,8 +3,18 @@
 Генератор иллюстраций курса (SVG). Единый стиль для всех уроков:
 светлая карточка + тёмные «окна IDE» внутри — читается и в светлой, и в тёмной теме IntelliJ.
 
-Запуск: python3 tools/images.py   (из корня курса)
+Запуск: python3 tools/images.py                  — все картинки, светлые и тёмные
+        python3 tools/images.py chest assign     — только эти функции
+        python3 tools/images.py s01_l03          — только картинки из модуля tools/img/s01_l03*.py
+
+Картинки новых уроков — в отдельных модулях tools/img/<раздел>_<урок>_<имя>.py (по одному на урок),
+чтобы уроки можно было рисовать независимо. Шаблон модуля — tools/img/README.md.
+Тема задаётся переменной окружения IMG_THEME (light/dark); без неё скрипт сам запускает себя дважды.
 """
+import importlib.util
+import os
+import subprocess
+import sys
 from pathlib import Path
 from xml.sax.saxutils import escape
 
@@ -26,17 +36,8 @@ THEMES = {
                  GREEN="#7CC45A", GREEN_SOFT="#25361C", ORANGE="#F0A35E", ORANGE_SOFT="#40301F",
                  BLUE="#7AA2F7", BLUE_SOFT="#22304D", RED="#F2737F", RED_SOFT="#45232A", PURPLE="#C29BF0"),
 }
-THEME = "light"
-
-
-def use_theme(name):
-    """Переключает глобальную палитру. Все функции рисования читают цвета в момент вызова."""
-    global THEME
-    THEME = name
-    globals().update(THEMES[name])
-
-
-use_theme("light")
+THEME = os.environ.get("IMG_THEME", "light")
+globals().update(THEMES[THEME])
 # «окно IDE» (тёмная тема, как Darcula / New UI Dark)
 IDE_BG, IDE_PANEL, IDE_LINE = "#1E1F22", "#2B2D30", "#393B40"
 IDE_TEXT, IDE_DIM = "#BCBEC4", "#6F737A"
@@ -553,11 +554,34 @@ ALL = [roadmap, ide_layout, placeholder,
        anatomy, run_img, print_vs_println, hotbar, escape_img, creeper, errors, comments,
        chest, assign]
 
+def lesson_modules(only=()):
+    """Модули картинок уроков: tools/img/*.py, у каждого список ALL.
+    Сломанный модуль чужого урока не мешает рисовать свой: он пропускается с предупреждением."""
+    mods = []
+    for f in sorted((Path(__file__).resolve().parent / "img").glob("*.py")):
+        wanted = not only or any(f.stem.startswith(o) for o in only)
+        spec = importlib.util.spec_from_file_location(f"img_{f.stem}", f)
+        m = importlib.util.module_from_spec(spec)
+        try:
+            spec.loader.exec_module(m)
+        except Exception as e:  # noqa: BLE001 — модуль соседнего урока может быть недописан
+            if wanted:
+                raise
+            print(f"⚠ пропускаю tools/img/{f.name}: {e}", file=sys.stderr)
+            continue
+        mods.append((f.stem, m))
+    return mods
+
+
 if __name__ == "__main__":
-    import sys
-    only = set(sys.argv[1:])  # можно перерисовать только нужные: python3 tools/images.py hotbar creeper
-    for theme in ("light", "dark"):
-        use_theme(theme)
-        for fn in ALL:
-            if not only or fn.__name__ in only:
-                fn()
+    if "IMG_THEME" not in os.environ:
+        for theme in ("light", "dark"):
+            subprocess.run([sys.executable, __file__, *sys.argv[1:]], env={**os.environ, "IMG_THEME": theme}, check=True)
+        sys.exit(0)
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import images as lib  # модули уроков импортируют этот же модуль — палитра одна
+    only = set(sys.argv[1:])
+    jobs = [("images", fn) for fn in lib.ALL] + [(stem, fn) for stem, m in lesson_modules(only) for fn in m.ALL]
+    for stem, fn in jobs:
+        if not only or fn.__name__ in only or any(stem.startswith(o) for o in only):
+            fn()

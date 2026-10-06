@@ -20,7 +20,8 @@ jobs:
             21
             25
       - uses: gradle/actions/setup-gradle@v4
-      - run: pip install pyyaml markdown-it-py
+      - run: pip install -r requirements.txt
       - run: python3 tools/check_order.py
       - run: python3 tools/preview.py
       - run: python3 tools/check_starters.py
+      - run: ./gradlew :common:test

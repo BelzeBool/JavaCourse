@@ -2,12 +2,19 @@ package course;
 
 import org.junit.jupiter.api.Assertions;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -22,21 +29,307 @@ public final class Check {
     private Check() {
     }
 
+    /** Сколько ждём программу ученика, прежде чем решить, что она зависла. */
+    public static final Duration TIMEOUT = Duration.ofSeconds(5);
+
     /** Запускает main ученика и возвращает всё, что он напечатал. */
     public static String runMain(ThrowingRunnable main) {
-        PrintStream original = System.out;
+        return runMainWithInput("", main);
+    }
+
+    /**
+     * Запускает main ученика так, будто с клавиатуры ввели input (строки через \n),
+     * и возвращает всё, что программа напечатала.
+     */
+    public static String runMainWithInput(String input, ThrowingRunnable main) {
+        PrintStream originalOut = System.out;
+        InputStream originalIn = System.in;
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         System.setOut(new PrintStream(buffer, true, StandardCharsets.UTF_8));
+        System.setIn(new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8)));
         try {
-            main.run();
-        } catch (Throwable e) {
-            System.setOut(original);
-            Assertions.fail("Программа упала с ошибкой: " + e
-                    + "\nЗапусти программу (зелёный треугольник рядом с main) и посмотри, что случилось.");
+            runWithTimeout(main, "Программа", "Программа упала с ошибкой: ");
         } finally {
-            System.setOut(original);
+            System.setOut(originalOut);
+            System.setIn(originalIn);
         }
         return buffer.toString(StandardCharsets.UTF_8);
+    }
+
+    // ---------- вызов методов ученика ----------
+
+    /**
+     * Вызывает static-метод ученика по имени: Check.call(Main.class, "stacks", 200).
+     * Если метода нет или параметры не те — понятное сообщение вместо ошибки компиляции тестов.
+     */
+    public static Object call(Class<?> cls, String name, Object... args) {
+        Method m = findMethod(cls, name, args);
+        if (!Modifier.isStatic(m.getModifiers())) {
+            Assertions.fail("Метод " + name + " должен быть static: в этой главе все методы пишутся со словом static."
+                    + "\nЖдём: static ... " + expectedSignature(name, args));
+        }
+        return invoke(m, null, name, args);
+    }
+
+    /** Вызывает метод объекта ученика: Check.callOn(zombie, "takeDamage", 5). */
+    public static Object callOn(Object target, String name, Object... args) {
+        Method m = findMethod(target.getClass(), name, args);
+        return invoke(m, target, name, args);
+    }
+
+    /**
+     * Проверяет, что метод возвращает нужное значение:
+     * Check.assertCall(3, Main.class, "stacks", 200) → «stacks(200) должен вернуть 3, а вернул 4».
+     */
+    public static void assertCall(Object expected, Class<?> cls, String name, Object... args) {
+        Object actual = call(cls, name, args);
+        if (!same(expected, actual)) {
+            Assertions.fail(expectedSignatureCall(name, args) + " должен вернуть " + describe(expected)
+                    + ", а вернул " + describe(actual) + ".");
+        }
+    }
+
+    /** Создаёт объект класса ученика по имени: Check.newObject("ItemStack", "diamond", 3). */
+    public static Object newObject(String className, Object... args) {
+        Class<?> cls = classNamed(className);
+        List<String> found = new ArrayList<>();
+        for (Constructor<?> c : cls.getDeclaredConstructors()) {
+            found.add(className + params(c.getParameterTypes()));
+            if (fits(c.getParameterTypes(), args)) {
+                c.setAccessible(true);
+                try {
+                    return c.newInstance(convert(c.getParameterTypes(), args));
+                } catch (InvocationTargetException e) {
+                    rethrowAssertion(e.getCause());
+                    Assertions.fail("new " + expectedSignatureCall(className, args) + " упал: " + explain(e.getCause()));
+                } catch (ReflectiveOperationException e) {
+                    Assertions.fail("Не получилось создать " + className + ": " + e);
+                }
+            }
+        }
+        Assertions.fail("У класса " + className + " нет конструктора " + expectedSignature(className, args) + "."
+                + (found.isEmpty() ? "" : "\nЕсть такие: " + String.join(", ", found)));
+        return null;
+    }
+
+    /** Класс ученика по имени (без пакета или с пакетом: "item.ItemStack"). */
+    public static Class<?> classNamed(String className) {
+        try {
+            return Class.forName(className);
+        } catch (ClassNotFoundException e) {
+            Assertions.fail("Не нашёл класс " + className + ". Проверь имя класса и файла: регистр важен, "
+                    + "класс " + className + " должен лежать в файле " + className.replace('.', '/') + ".java.");
+            return null;
+        }
+    }
+
+    /** Значение для сообщений: строки в кавычках, массивы поэлементно. */
+    public static String describe(Object v) {
+        if (v == null) {
+            return "null";
+        }
+        if (v instanceof String) {
+            return "\"" + v + "\"";
+        }
+        if (v instanceof Character) {
+            return "'" + v + "'";
+        }
+        if (v.getClass().isArray()) {
+            return Arrays.deepToString(new Object[]{v}).replaceAll("^\\[|\\]$", "");
+        }
+        return String.valueOf(v);
+    }
+
+    private static Method findMethod(Class<?> cls, String name, Object[] args) {
+        List<String> sameName = new ArrayList<>();
+        for (Method m : cls.getDeclaredMethods()) {
+            if (!m.getName().equals(name)) {
+                continue;
+            }
+            sameName.add(name + params(m.getParameterTypes()));
+            if (fits(m.getParameterTypes(), args)) {
+                m.setAccessible(true);
+                return m;
+            }
+        }
+        if (sameName.isEmpty()) {
+            Assertions.fail("В классе " + cls.getSimpleName() + " нет метода " + name + ".\nЖдём: "
+                    + expectedSignature(name, args) + "\nПроверь имя: регистр букв важен.");
+        }
+        Assertions.fail("Метод " + name + " есть, но параметры не те.\n  у тебя: " + String.join(", ", sameName)
+                + "\n  ждём:   " + expectedSignature(name, args));
+        return null;
+    }
+
+    private static Object invoke(Method m, Object target, String name, Object[] args) {
+        Object[] converted = convert(m.getParameterTypes(), args);
+        Object[] result = new Object[1];
+        runWithTimeout(() -> {
+            try {
+                result[0] = m.invoke(target, converted);
+            } catch (InvocationTargetException e) {
+                rethrowAssertion(e.getCause());
+                Assertions.fail("Вызов " + expectedSignatureCall(name, args) + " упал: " + explain(e.getCause()));
+            }
+        }, "Вызов " + expectedSignatureCall(name, args), "Вызов " + expectedSignatureCall(name, args) + " упал: ");
+        return result[0];
+    }
+
+    private static void runWithTimeout(ThrowingRunnable code, String who, String crashed) {
+        Assertions.assertTimeoutPreemptively(TIMEOUT, () -> {
+            try {
+                code.run();
+            } catch (Throwable e) {
+                rethrowAssertion(e);
+                Assertions.fail(crashed + explain(e)
+                        + "\nЗапусти программу (зелёный треугольник рядом с main) и посмотри, что случилось.");
+            }
+        }, () -> who + " работает дольше " + TIMEOUT.toSeconds() + " секунд — похоже на бесконечный цикл."
+                + "\nПроверь условие цикла: оно когда-нибудь станет ложным?");
+    }
+
+    private static void rethrowAssertion(Throwable e) {
+        if (e instanceof AssertionError) {
+            throw (AssertionError) e;
+        }
+    }
+
+    /** Исключение по-русски, со строкой в Main.java, где оно случилось. */
+    public static String explain(Throwable e) {
+        String type = e.getClass().getSimpleName();
+        String ru = switch (type) {
+            case "ArithmeticException" -> "арифметическая ошибка (например, деление на ноль)";
+            case "ArrayIndexOutOfBoundsException" -> "выход за границы массива";
+            case "StringIndexOutOfBoundsException" -> "выход за границы строки";
+            case "NullPointerException" -> "обращение к null — там, где ждали объект, ничего нет";
+            case "InputMismatchException" -> "введено не то, что ожидал Scanner (например, текст вместо числа)";
+            case "NoSuchElementException" -> "ввод закончился, а программа ждёт ещё";
+            case "NumberFormatException" -> "текст не получилось превратить в число";
+            case "StackOverflowError" -> "переполнение стека — похоже на бесконечную рекурсию";
+            case "ClassCastException" -> "неверное приведение типа";
+            default -> "";
+        };
+        StringBuilder out = new StringBuilder(type);
+        if (e.getMessage() != null) {
+            out.append(": ").append(e.getMessage());
+        }
+        if (!ru.isEmpty()) {
+            out.append(" — ").append(ru);
+        }
+        for (StackTraceElement el : e.getStackTrace()) {
+            String file = el.getFileName();
+            if (file != null && !file.equals("Tests.java") && !el.getClassName().startsWith("java.")
+                    && !el.getClassName().startsWith("jdk.") && !el.getClassName().equals("course.Check")
+                    && !el.getClassName().startsWith("course.Check$")
+                    && !el.getClassName().startsWith("org.")) {
+                out.append(" (").append(file).append(", строка ").append(el.getLineNumber()).append(")");
+                break;
+            }
+        }
+        return out.toString();
+    }
+
+    private static boolean fits(Class<?>[] params, Object[] args) {
+        if (params.length != args.length) {
+            return false;
+        }
+        for (int i = 0; i < params.length; i++) {
+            if (!fits(params[i], args[i])) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static boolean fits(Class<?> p, Object a) {
+        if (a == null) {
+            return !p.isPrimitive();
+        }
+        Class<?> w = wrap(p);
+        if (w.isInstance(a)) {
+            return true;
+        }
+        // расширение чисел: int можно передать туда, где ждут long или double
+        if (a instanceof Integer && (w == Long.class || w == Double.class)) {
+            return true;
+        }
+        return a instanceof Long && w == Double.class;
+    }
+
+    private static Object[] convert(Class<?>[] params, Object[] args) {
+        Object[] out = new Object[args.length];
+        for (int i = 0; i < args.length; i++) {
+            Class<?> w = wrap(params[i]);
+            Object a = args[i];
+            if (a instanceof Number n && !w.isInstance(a)) {
+                a = w == Long.class ? (Object) n.longValue() : w == Double.class ? (Object) n.doubleValue() : a;
+            }
+            out[i] = a;
+        }
+        return out;
+    }
+
+    private static Class<?> wrap(Class<?> c) {
+        if (!c.isPrimitive()) {
+            return c;
+        }
+        return switch (c.getName()) {
+            case "int" -> Integer.class;
+            case "long" -> Long.class;
+            case "double" -> Double.class;
+            case "boolean" -> Boolean.class;
+            case "char" -> Character.class;
+            case "float" -> Float.class;
+            case "short" -> Short.class;
+            case "byte" -> Byte.class;
+            default -> Void.class;
+        };
+    }
+
+    private static boolean same(Object expected, Object actual) {
+        if (expected instanceof Double d && actual instanceof Number n) {
+            return Math.abs(d - n.doubleValue()) < 1e-9;
+        }
+        if (expected != null && actual != null && expected.getClass().isArray()) {
+            return Arrays.deepEquals(new Object[]{expected}, new Object[]{actual});
+        }
+        if (expected instanceof Integer i && actual instanceof Long l) {
+            return i.longValue() == l;
+        }
+        return java.util.Objects.equals(expected, actual);
+    }
+
+    private static String params(Class<?>[] types) {
+        StringBuilder sb = new StringBuilder("(");
+        for (int i = 0; i < types.length; i++) {
+            sb.append(i > 0 ? ", " : "").append(types[i].getSimpleName());
+        }
+        return sb.append(")").toString();
+    }
+
+    private static String expectedSignature(String name, Object[] args) {
+        StringBuilder sb = new StringBuilder(name).append("(");
+        for (int i = 0; i < args.length; i++) {
+            Object a = args[i];
+            String t = a == null ? "?" : switch (a.getClass().getSimpleName()) {
+                case "Integer" -> "int";
+                case "Double" -> "double";
+                case "Boolean" -> "boolean";
+                case "Character" -> "char";
+                case "Long" -> "long";
+                default -> a.getClass().getSimpleName();
+            };
+            sb.append(i > 0 ? ", " : "").append(t);
+        }
+        return sb.append(")").toString();
+    }
+
+    private static String expectedSignatureCall(String name, Object[] args) {
+        StringBuilder sb = new StringBuilder(name).append("(");
+        for (int i = 0; i < args.length; i++) {
+            sb.append(i > 0 ? ", " : "").append(describe(args[i]));
+        }
+        return sb.append(")").toString();
     }
 
     /**

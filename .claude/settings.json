@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3 tools/:*)",
+      "Bash(python3 -I tools/:*)",
+      "Bash(./gradlew:*)",
+      "Bash(javac:*)",
+      "Bash(java:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git show:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(pip3 install -r requirements.txt)",
+      "Read",
+      "Edit",
+      "Write"
+    ]
+  }
+}

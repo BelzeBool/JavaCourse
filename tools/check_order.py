@@ -12,6 +12,7 @@
 
 Запуск: python3 tools/check_order.py        (нужен PyYAML)
         python3 tools/check_order.py -v     (ещё и показать, какие понятия есть в каждом шаге)
+        python3 tools/check_order.py --only s01_basics/l03_arithmetic   (только один урок)
 """
 import html
 import re
@@ -93,9 +94,13 @@ def main():
         c["since_key"] = parse_since(c["since"])
     ids = {c["id"] for c in concepts}
 
+    # --only s01_basics/l03_arithmetic — проверить только этот урок (или раздел)
+    only = [(ROOT / a).resolve() for a in sys.argv[sys.argv.index("--only") + 1:]] if "--only" in sys.argv else []
     problems, checked = [], 0
     for info in sorted(ROOT.glob("s*/l*/*/task-info.yaml")):
         task_dir = info.parent
+        if only and not any(o in task_dir.resolve().parents for o in only):
+            continue
         key = lesson_key(task_dir)
         allowed = previews(task_dir)
         for unknown in allowed - ids:

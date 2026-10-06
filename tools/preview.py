@@ -404,38 +404,45 @@ if(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)theme('
 
 
 def bundle(lesson_rel):
-    """Один самодостаточный HTML со всеми шагами урока: картинки и kit.js внутри."""
-    course, tree = course_tree()
+    """Один самодостаточный HTML со всеми шагами урока: картинки и kit.js внутри.
+    Работает и для урока, который ещё не внесён в section-info.yaml."""
     target = (ROOT / lesson_rel).resolve()
-    for sec in tree:
-        for les in sec["lessons"]:
-            if les["dir"].resolve() != target:
-                continue
-            page_of = {t["dir"].resolve(): OUT / "x" for t in les["tasks"]}
-            parts = []
-            for n, t in enumerate(les["tasks"], 1):
-                h = render_step(t, OUT, page_of, inline=True)
-                choice = choice_block(t["info"]).replace('name="o"', f'name="o{n}"')
-                files = student_files(t)
-                editor = ""
-                if files:
-                    editor = '<details class="pv-ed"><summary>Редактор (глазами ученика)</summary>' + "".join(
-                        f'<div class="pv-file"><div class="pv-file-h">{html.escape(fn)}</div><pre>{c}</pre></div>'
-                        for fn, c in files) + "</details>"
-                parts.append(f'<section class="pv-step"><div class="pv-stepno">Шаг {n} из {len(les["tasks"])} · '
-                             f'{TYPE_NAME.get(t["type"], t["type"])}</div>'
-                             f'<h1 class="pv-title">{TYPE_ICON.get(t["type"], "")} {html.escape(t["name"])}</h1>'
-                             f'<div class="pv-content">{h}</div>{choice}{editor}</section>')
-            OUT.mkdir(parents=True, exist_ok=True)
-            out = ROOT / "build" / f"lesson-{target.name}.html"
-            out.write_text(BUNDLE.format(title=html.escape(les["name"]), css=CSS, steps="".join(parts),
-                                         kit=(ROOT / "lesson-kit" / "kit.js").read_text(encoding="utf-8")
-                                         .replace("</script", "<\\/script")),
-                           encoding="utf-8")
-            print(f"Готово: {out.relative_to(ROOT)}")
-            return 0
-    print(f"Урок {lesson_rel} не найден в course-info.yaml")
-    return 1
+    if not (target / "lesson-info.yaml").exists():
+        print(f"Нет {lesson_rel}/lesson-info.yaml")
+        return 1
+    linfo = load_yaml(target / "lesson-info.yaml")
+    tasks = []
+    for t in linfo.get("content", []):
+        tinfo = load_yaml(target / t / "task-info.yaml")
+        tasks.append({"dir": target / t, "id": t, "info": tinfo,
+                      "name": tinfo.get("custom_name", t), "type": tinfo.get("type", "theory")})
+    page_of = {t["dir"].resolve(): OUT / "x" for t in tasks}
+    parts = []
+    for n, t in enumerate(tasks, 1):
+        h = render_step(t, OUT, page_of, inline=True)
+        choice = choice_block(t["info"]).replace('name="o"', f'name="o{n}"')
+        files = student_files(t)
+        editor = ""
+        if files:
+            editor = '<details class="pv-ed"><summary>Редактор (глазами ученика)</summary>' + "".join(
+                f'<div class="pv-file"><div class="pv-file-h">{html.escape(fn)}</div><pre>{c}</pre></div>'
+                for fn, c in files) + "</details>"
+        parts.append(f'<section class="pv-step"><div class="pv-stepno">Шаг {n} из {len(tasks)} · '
+                     f'{TYPE_NAME.get(t["type"], t["type"])}</div>'
+                     f'<h1 class="pv-title">{TYPE_ICON.get(t["type"], "")} {html.escape(t["name"])}</h1>'
+                     f'<div class="pv-content">{h}</div>{choice}{editor}</section>')
+    out = ROOT / "build" / f"lesson-{target.name}.html"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(BUNDLE.format(title=html.escape(linfo.get("custom_name", target.name)), css=CSS,
+                                 steps="".join(parts),
+                                 kit=(ROOT / "lesson-kit" / "kit.js").read_text(encoding="utf-8")
+                                 .replace("</script", "<\\/script")),
+                   encoding="utf-8")
+    print(f"Готово: {out.relative_to(ROOT)}")
+    if "data-pv-missing" in "".join(parts):
+        print("  ⚠ в уроке есть картинки, которых нет на диске")
+        return 1
+    return 0
 
 
 def main():
