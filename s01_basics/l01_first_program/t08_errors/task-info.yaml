@@ -14,3 +14,5 @@ files:
     visible: false
   - name: images/errors.svg
     visible: false
+  - name: images/errors_dark.svg
+    visible: false

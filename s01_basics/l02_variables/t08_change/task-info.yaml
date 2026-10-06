@@ -1,0 +1,9 @@
+type: theory
+custom_name: "Новое значение: = значит «положи»"
+files:
+  - name: src/Main.java
+    visible: true
+  - name: images/assign.svg
+    visible: false
+  - name: images/assign_dark.svg
+    visible: false

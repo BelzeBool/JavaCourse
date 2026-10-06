@@ -1,0 +1,18 @@
+type: choice
+custom_name: "Вопрос: сколько стрел?"
+is_multiple_choice: false
+options:
+  - text: "13"
+    is_correct: true
+  - text: "12"
+    is_correct: false
+  - text: "10"
+    is_correct: false
+  - text: "18"
+    is_correct: false
+message_correct: "Верно! 10 − 3 = 7, потом 7 + 5 = 12, потом ++ добавляет ещё 1 — получается 13."
+message_incorrect: "Не совсем. Пройди по строкам и после каждой запиши, что лежит в arrows: 10, потом 10 − 3, потом +5, потом ++ (это +1)."
+local_check: true
+files:
+  - name: src/Main.java
+    visible: true

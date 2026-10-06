@@ -13,6 +13,7 @@ content:
 environment_settings:
   jvm_language_level: JDK_21
 additional_files:
+  - name: lesson-kit/kit.js
   - name: common/src/main/java/course/Check.java
   - name: common/build.gradle.kts
   - name: build.gradle.kts

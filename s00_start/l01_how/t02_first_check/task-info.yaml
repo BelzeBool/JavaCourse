@@ -11,3 +11,5 @@ files:
     visible: false
   - name: images/placeholder.svg
     visible: false
+  - name: images/placeholder_dark.svg
+    visible: false

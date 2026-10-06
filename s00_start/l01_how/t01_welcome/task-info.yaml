@@ -7,3 +7,7 @@ files:
     visible: false
   - name: images/ide-layout.svg
     visible: false
+  - name: images/ide-layout_dark.svg
+    visible: false
+  - name: images/roadmap_dark.svg
+    visible: false

@@ -1,0 +1,11 @@
+type: edu
+custom_name: "Задача: карточка игрока"
+files:
+  - name: src/Main.java
+    visible: true
+    placeholders:
+      - offset: 73
+        length: 142
+        placeholder_text: "// Объяви пять переменных здесь"
+  - name: test/Tests.java
+    visible: false

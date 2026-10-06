@@ -1,0 +1,216 @@
+# Карта понятий Java: где каждое вводится.
+#
+# Нужна, чтобы курс «не скакал»: в коде шага (src/*.java и блоки кода в task.md) можно использовать
+# только то, что уже пройдено. Проверяет tools/check_order.py.
+#
+#   since — урок, в котором понятие объясняется ("раздел.урок").
+#   find  — регулярное выражение для поиска в коде. Код перед поиском очищается: убираются комментарии,
+#           содержимое строк ("..." → "") и символов ('x' → ''), «шапка» Main и main.
+#   name  — как понятие называется в отчёте.
+#
+# Если шаг намеренно показывает что-то заранее («подробно — в уроке 1.3»), в его task.md пишется
+#   <!-- preview: arith -->
+# и проверка это пропустит. Так «забегания» видны и сделаны осознанно.
+#
+# «Заклинание» — конструкция, которую ученик пишет раньше, чем понимает (шапка main, new Scanner).
+# Для неё since — урок, где ученик начинает её писать, а explained — где её наконец объясняют.
+# В тексте урока заклинание помечается плашкой «Пока просто запомни…» с обещанием, где объясним.
+
+concepts:
+  # ---------- 1.1 ----------
+  - id: print
+    name: 'печать println / print'
+    since: "1.1"
+    find: '\bSystem\.out\.print(ln)?\s*\('
+  - id: main-header
+    name: 'шапка программы (class Main + main) — заклинание'
+    since: "1.1"
+    explained: "2.4"
+    find: '(?!x)x'   # вырезается из кода до проверки
+
+  # ---------- 1.2 Переменные ----------
+  - id: variables
+    name: 'объявление переменных'
+    since: "1.2"
+    find: '\b(int|long|double|float|boolean|char|byte|short|String|var)\s+[A-Za-z_]\w*\s*[=;,]'
+  - id: assign-ops
+    name: '+=, -=, ++, --'
+    since: "1.2"
+    find: '\+\+|--|[+\-]='
+  - id: arith
+    name: 'сложение и вычитание чисел'
+    since: "1.2"
+    find: '(\w|\))\s*[+\-]\s*(\w|\()'
+  - id: concat
+    name: 'склейка строк через +'
+    since: "1.2"
+    find: '""\s*\+|\+\s*""'
+  - id: char-literal
+    name: 'символ в одинарных кавычках'
+    since: "1.2"
+    find: "''"
+  - id: final
+    name: 'константы final'
+    since: "1.2"
+    find: '\bfinal\b'
+
+  # ---------- 1.3 Арифметика ----------
+  - id: mul-div
+    name: '*, / и % (умножение, деление, остаток)'
+    since: "1.3"
+    find: '(\w|\))\s*[*/%]\s*(\w|\()'
+  - id: math
+    name: 'класс Math'
+    since: "1.3"
+    find: '\bMath\.'
+  - id: cast
+    name: 'приведение типов (int), (double)'
+    since: "1.3"
+    find: '\(\s*(int|long|double|float|char|byte|short)\s*\)\s*[\w(]'
+
+  # ---------- 1.4 Строки ----------
+  - id: string-methods
+    name: 'методы строк (length, substring, equals…)'
+    since: "1.4"
+    find: '\.(length|charAt|substring|indexOf|lastIndexOf|equals|equalsIgnoreCase|toUpperCase|toLowerCase|contains|replace|strip|trim|isEmpty|isBlank|startsWith|endsWith|split|repeat|formatted)\s*\('
+  - id: string-format
+    name: 'String.format и printf'
+    since: "1.4"
+    find: '\bString\.format\s*\(|\.printf\s*\('
+
+  # ---------- 1.5 Условия ----------
+  - id: if
+    name: 'if / else'
+    since: "1.5"
+    find: '\bif\s*\(|\belse\b'
+  - id: compare
+    name: 'сравнения (==, <, > …)'
+    since: "1.5"
+    find: '==|!=|<=|>=|(\w|\))\s*[<>]\s*(\w|\()'
+  - id: logic
+    name: '&&, ||, !'
+    since: "1.5"
+    find: '&&|\|\||!\s*[\w(]'
+  - id: switch
+    name: 'switch'
+    since: "1.5"
+    find: '\bswitch\b'
+  - id: ternary
+    name: 'тернарный оператор ? :'
+    since: "1.5"
+    find: '\?[^:]*:'
+
+  # ---------- 1.6 Циклы ----------
+  - id: loops
+    name: 'циклы for / while / do'
+    since: "1.6"
+    find: '\b(for|while|do)\b\s*[({]'
+  - id: break-continue
+    name: 'break / continue'
+    since: "1.6"
+    find: '\b(break|continue)\s*;'
+
+  # ---------- 1.7 Методы ----------
+  - id: own-methods
+    name: 'свои методы'
+    since: "1.7"
+    find: '\bstatic\s+(final\s+)?[\w<>\[\]]+\s+(?!main\b)[a-z]\w*\s*\('
+  - id: return
+    name: 'return'
+    since: "1.7"
+    find: '\breturn\b'
+
+  # ---------- 1.8 Массивы ----------
+  - id: arrays
+    name: 'массивы'
+    since: "1.8"
+    find: '\['
+
+  # ---------- 1.9 Ввод ----------
+  - id: scanner
+    name: 'Scanner и ввод с клавиатуры — заклинание'
+    since: "1.9"
+    explained: "2.1"
+    find: '\bScanner\b|System\.in\b'
+  - id: import
+    name: 'import'
+    since: "1.9"
+    find: '^\s*import\b'
+
+  # ---------- 2. ООП ----------
+  - id: classes
+    name: 'свои классы и объекты (new)'
+    since: "2.1"
+    find: '\bclass\s+(?!Main\b)\w+|\bnew\s+(?!Scanner\b)[A-Z]\w*\s*\('
+  - id: null
+    name: 'null'
+    since: "2.1"
+    find: '\bnull\b'
+  - id: this
+    name: 'this и конструкторы'
+    since: "2.2"
+    find: '\bthis\b'
+  - id: access
+    name: 'private / protected, пакеты'
+    since: "2.3"
+    find: '\b(private|protected|package)\b'
+  - id: static-members
+    name: 'static-поля'
+    since: "2.4"
+    find: '\bstatic\s+(final\s+)?[\w<>\[\]]+\s+\w+\s*[=;]'
+  - id: inheritance
+    name: 'наследование (extends, super, @Override)'
+    since: "2.5"
+    find: '\bextends\b|\bsuper\b|@Override'
+  - id: instanceof
+    name: 'instanceof'
+    since: "2.6"
+    find: '\binstanceof\b'
+  - id: abstract-interface
+    name: 'abstract и интерфейсы'
+    since: "2.7"
+    find: '\babstract\b|\binterface\b|\bimplements\b'
+  - id: enum-record
+    name: 'enum и record'
+    since: "2.8"
+    find: '\benum\s+\w+|\brecord\s+\w+\s*\('
+
+  # ---------- 5. Коллекции ----------
+  - id: list
+    name: 'ArrayList и List'
+    since: "5.1"
+    find: '\b(ArrayList|List|LinkedList)\b'
+  - id: map
+    name: 'HashMap и Map'
+    since: "5.2"
+    find: '\b(HashMap|TreeMap|Map)\b'
+  - id: set
+    name: 'Set'
+    since: "5.3"
+    find: '\b(HashSet|TreeSet|Set)\b'
+  - id: generics
+    name: 'свои обобщённые типы <T>'
+    since: "5.4"
+    find: '<\s*[A-Z]\s*(extends\b[^>]*)?>'
+  - id: optional
+    name: 'Optional'
+    since: "5.5"
+    find: '\bOptional\b'
+
+  # ---------- 6. Исключения и лямбды ----------
+  - id: exceptions
+    name: 'исключения try / catch / throw'
+    since: "6.1"
+    find: '\b(try|catch|throw|throws|finally)\b'
+  - id: lambda
+    name: 'лямбды'
+    since: "6.2"
+    find: '->'
+  - id: method-ref
+    name: 'ссылки на методы ::'
+    since: "6.3"
+    find: '::'
+  - id: streams
+    name: 'Stream API'
+    since: "6.4"
+    find: '\.stream\s*\(\)'

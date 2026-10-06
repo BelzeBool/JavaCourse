@@ -1,0 +1,15 @@
+custom_name: "1.2 Переменные и типы"
+content:
+  - t01_chest
+  - t02_quiz_quotes
+  - t03_first_variable
+  - t04_concat
+  - t05_types
+  - t06_quiz_types
+  - t07_player_card
+  - t08_change
+  - t09_quiz_trace
+  - t10_level
+  - t11_names
+  - t12_fix
+  - t13_recap

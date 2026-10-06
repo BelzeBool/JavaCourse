@@ -1,0 +1,18 @@
+type: choice
+custom_name: "Вопрос: имя или текст?"
+is_multiple_choice: false
+options:
+  - text: "torches = 64"
+    is_correct: true
+  - text: "torches = torches"
+    is_correct: false
+  - text: "64 = 64"
+    is_correct: false
+  - text: "torches = \"64\""
+    is_correct: false
+message_correct: "Верно! В кавычках — текст, он печатается как есть. Без кавычек — имя переменной, вместо него печатается то, что лежит в сундуке."
+message_incorrect: "Не совсем. Первая команда печатает текст в кавычках как есть. Вторая — без кавычек: Java ищет сундук torches и печатает его содержимое, 64. Кавычки вокруг значения при печати не появляются."
+local_check: true
+files:
+  - name: src/Main.java
+    visible: true

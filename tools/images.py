@@ -10,16 +10,33 @@ from xml.sax.saxutils import escape
 
 ROOT = Path(__file__).resolve().parent.parent
 L1 = ROOT / "s01_basics/l01_first_program"
+L2 = ROOT / "s01_basics/l02_variables"
 L0 = ROOT / "s00_start/l01_how"
 
 # ---------- палитра и шрифты ----------
-CARD, CARD_LINE = "#FBFAF6", "#E2DED3"
-INK, MUTED, FAINT = "#1E2330", "#646B7A", "#A3A9B5"
-GREEN, GREEN_SOFT = "#4E8A2A", "#E3F0D6"
-ORANGE, ORANGE_SOFT = "#C8641B", "#FBE7D6"
-BLUE, BLUE_SOFT = "#2F62C8", "#DCE6FA"
-RED, RED_SOFT = "#C2303F", "#FADDE1"
-PURPLE = "#7A45B5"
+# Две темы: светлая карточка для светлой IDE и тёмная для тёмной. Плагин сам покажет x_dark.svg
+# вместо x.svg, если IDE в тёмной теме (см. docs/plugin-capabilities.md).
+# Смысловые цвета одинаковы во всём курсе: тип — синий, имя — оранжевый, значение — зелёный,
+# ошибка — красный, связь с модами — фиолетовый.
+THEMES = {
+    "light": dict(CARD="#FBFAF6", CARD_LINE="#E2DED3", SURFACE="#FFFFFF", INK="#1E2330", MUTED="#646B7A", FAINT="#A3A9B5",
+                  GREEN="#4E8A2A", GREEN_SOFT="#E3F0D6", ORANGE="#C8641B", ORANGE_SOFT="#FBE7D6",
+                  BLUE="#2F62C8", BLUE_SOFT="#DCE6FA", RED="#C2303F", RED_SOFT="#FADDE1", PURPLE="#7A45B5"),
+    "dark": dict(CARD="#313438", CARD_LINE="#45484E", SURFACE="#26282C", INK="#DFE1E5", MUTED="#A0A4AD", FAINT="#6F737A",
+                 GREEN="#7CC45A", GREEN_SOFT="#25361C", ORANGE="#F0A35E", ORANGE_SOFT="#40301F",
+                 BLUE="#7AA2F7", BLUE_SOFT="#22304D", RED="#F2737F", RED_SOFT="#45232A", PURPLE="#C29BF0"),
+}
+THEME = "light"
+
+
+def use_theme(name):
+    """Переключает глобальную палитру. Все функции рисования читают цвета в момент вызова."""
+    global THEME
+    THEME = name
+    globals().update(THEMES[name])
+
+
+use_theme("light")
 # «окно IDE» (тёмная тема, как Darcula / New UI Dark)
 IDE_BG, IDE_PANEL, IDE_LINE = "#1E1F22", "#2B2D30", "#393B40"
 IDE_TEXT, IDE_DIM = "#BCBEC4", "#6F737A"
@@ -51,25 +68,34 @@ def code_line(x, y, tokens, size=14):
             f'{parts}</text>')
 
 
-def java_tokens(line):
-    """Простейшая подсветка Java для иллюстраций."""
+# подсветка для кода на светлой поверхности карточки (как IntelliJ Light)
+LIGHT_SYN = dict(kw="#0033B3", str="#067D17", com="#8C8C8C", num="#1750EB", fn="#00627A", txt="#080808")
+
+
+def java_tokens(line, on_card=False):
+    """Простейшая подсветка Java для иллюстраций.
+    on_card=True — код лежит прямо на карточке, а не в тёмном «окне IDE»: в светлой теме берём светлую схему."""
     import re
+    if on_card and THEME == "light":
+        kw_c, str_c, com_c, num_c, fn_c, txt_c = (LIGHT_SYN[k] for k in ("kw", "str", "com", "num", "fn", "txt"))
+    else:
+        kw_c, str_c, com_c, num_c, fn_c, txt_c = SYN_KW, SYN_STR, SYN_COM, SYN_NUM, SYN_FN, IDE_TEXT
     out = []
     pat = re.compile(r'(//.*$)|("(?:\\.|[^"\\])*"?)|\b(public|class|static|void|new|return)\b|\b(\d+)\b|(\w+)(?=\()|(.)')
     for m in pat.finditer(line):
         com, s, kw, num, fn, other = m.groups()
         if com:
-            out.append((com, SYN_COM))
+            out.append((com, com_c))
         elif s:
-            out.append((s, SYN_STR))
+            out.append((s, str_c))
         elif kw:
-            out.append((kw, SYN_KW))
+            out.append((kw, kw_c))
         elif num:
-            out.append((num, SYN_NUM))
+            out.append((num, num_c))
         elif fn:
-            out.append((fn, SYN_FN))
+            out.append((fn, fn_c))
         else:
-            out.append((m.group(0), IDE_TEXT))
+            out.append((m.group(0), txt_c))
     return out
 
 
@@ -118,6 +144,9 @@ def pixel_art(x, y, rows, px, palette):
 
 
 def save(path, content):
+    if THEME == "dark":
+        path = path.with_name(path.stem + "_dark" + path.suffix)
+    path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(content, encoding="utf-8")
     print("ok ", path.relative_to(ROOT))
 
@@ -243,7 +272,7 @@ def anatomy():
     rules = [('"текст"', "в кавычках"), (";", "конец команды"), ("{ }", "всегда в паре")]
     for i, (sym, lab) in enumerate(rules):
         x = 24 + i * 214
-        b += f'<rect x="{x}" y="232" width="200" height="40" rx="10" fill="#FFFFFF" stroke="{CARD_LINE}"/>'
+        b += f'<rect x="{x}" y="232" width="200" height="40" rx="10" fill="{SURFACE}" stroke="{CARD_LINE}"/>'
         b += text(x + 14, 258, sym, 15, ORANGE, 700, font=MONO)
         b += text(x + 14 + len(sym) * 15 * CW + 10, 257, lab, 13, INK)
     save(L1 / "t01_anatomy/images/anatomy.svg", svg(w, h, b, "Разбор программы: класс, метод main и команда println"))
@@ -289,8 +318,8 @@ def print_vs_println():
         ('println("Алмазы: 3")', ["Алмазы: 3", ""], (1, 0), "курсор перешёл на новую строку"),
     ]):
         x = 24 + i * 324
-        b += f'<rect x="{x}" y="22" width="308" height="34" rx="8" fill="#FFFFFF" stroke="{CARD_LINE}"/>'
-        b += code_line(x + 14, 44, java_tokens(cmd), 13.5)
+        b += f'<rect x="{x}" y="22" width="308" height="34" rx="8" fill="{SURFACE}" stroke="{CARD_LINE}"/>'
+        b += code_line(x + 14, 44, java_tokens(cmd, on_card=True), 13.5)
         b += arrow(x + 154, 60, x + 154, 82, MUTED)
         b += console(x, 88, 308, 104, rows, cur)
         b += f'<rect x="{x}" y="204" width="14" height="14" rx="3" fill="#E8A33D"/>'
@@ -427,6 +456,108 @@ def comments():
     save(L1 / "t09_comments/images/comments.svg", svg(w, h, b, "Комментарии: Java выполняет только строки B и E"))
 
 
+# =====================================================================
+# 1.2 Переменные
+# =====================================================================
+WOOD, WOOD_DARK, WOOD_EDGE, LATCH = "#A8722F", "#7A4E1C", "#3B2410", "#D7D7D7"
+
+
+def chest_px(x, y, s, value=None, value_color=None, old=None):
+    """Сундук в духе Minecraft размером s×s. В «окошке» — значение переменной."""
+    b = f'<rect x="{x}" y="{y}" width="{s}" height="{s}" rx="4" fill="{WOOD}" stroke="{WOOD_EDGE}" stroke-width="3"/>'
+    lid = s * 0.32
+    b += f'<rect x="{x}" y="{y}" width="{s}" height="{lid:.0f}" rx="4" fill="{WOOD_DARK}" stroke="{WOOD_EDGE}" stroke-width="3"/>'
+    for k in (1, 2, 3):  # доски
+        yy = y + lid + (s - lid) * k / 4
+        b += f'<line x1="{x+4}" y1="{yy:.0f}" x2="{x+s-4}" y2="{yy:.0f}" stroke="{WOOD_DARK}" stroke-width="2"/>'
+    b += f'<rect x="{x+s/2-7:.0f}" y="{y+lid-8:.0f}" width="14" height="16" fill="{LATCH}" stroke="{WOOD_EDGE}" stroke-width="2"/>'
+    if value is not None:
+        wx, wy, ww, wh = x + s * 0.18, y + lid + 14, s * 0.64, s - lid - 26
+        b += f'<rect x="{wx:.0f}" y="{wy:.0f}" width="{ww:.0f}" height="{wh:.0f}" rx="5" fill="{SURFACE}" stroke="{WOOD_EDGE}" stroke-width="2"/>'
+        fs = 30 if len(value) <= 3 else 20
+        b += text(x + s / 2, wy + wh / 2 + fs * 0.36, value, fs, value_color or GREEN, 700, font=MONO, anchor="middle")
+        if old is not None:
+            b += text(wx + 10, wy + 18, old, 13, MUTED, 600, font=MONO)
+            b += f'<line x1="{wx+6:.0f}" y1="{wy+13:.0f}" x2="{wx+10+len(old)*13*CW+4:.0f}" y2="{wy+13:.0f}" stroke="{RED}" stroke-width="2"/>'
+    return b
+
+
+def sign_px(cx, y, label, w=None):
+    """Табличка с именем переменной над сундуком."""
+    w = w or max(96, len(label) * 15 * CW + 28)
+    b = f'<rect x="{cx-3}" y="{y+30}" width="6" height="18" fill="{WOOD_DARK}"/>'
+    b += f'<rect x="{cx-w/2:.0f}" y="{y}" width="{w:.0f}" height="34" rx="3" fill="#C8A165" stroke="{WOOD_EDGE}" stroke-width="2.5"/>'
+    b += text(cx, y + 23, label, 15, "#4A2A08", 700, font=MONO, anchor="middle")
+    return b
+
+
+def type_tag(x, y, label):
+    w = len(label) * 13 * CW + 16
+    return (f'<rect x="{x}" y="{y}" width="{w:.0f}" height="22" rx="5" fill="{BLUE_SOFT}" stroke="{BLUE}" stroke-width="1.5"/>'
+            + text(x + w / 2, y + 16, label, 13, BLUE, 700, font=MONO, anchor="middle"))
+
+
+def chest():
+    # ширина 480: панель задания в IDE узкая, картинка не должна уменьшаться
+    w, h = 480, 300
+    cx, cy, s = 28, 68, 110
+    b = sign_px(cx + s / 2, 20, "diamonds")
+    b += chest_px(cx, cy, s, "5")
+    b += type_tag(cx - 12, cy + s - 14, "int")
+    items = [(BLUE, "Тип: int", "что можно класть: только целые числа"),
+             (ORANGE, "Имя: diamonds", "табличка, по ней ищем сундук"),
+             (GREEN, "Значение: 5", "что лежит внутри сейчас")]
+    for i, (col, t1, t2) in enumerate(items):
+        yy = 56 + i * 54
+        b += f'<rect x="172" y="{yy-17}" width="6" height="42" rx="3" fill="{col}"/>'
+        b += text(188, yy, t1, 15, col, 700)
+        b += text(188, yy + 21, t2, 13.5, MUTED)
+    y0 = 266
+    b += f'<rect x="16" y="{y0-27}" width="448" height="42" rx="10" fill="{SURFACE}" stroke="{CARD_LINE}"/>'
+    b += code_line(34, y0, [("int", BLUE), (" ", INK), ("diamonds", ORANGE), (" = ", INK), ("5", GREEN), (";", INK)], 18)
+    b += text(448, y0 - 1, "так в коде", 13, MUTED, anchor="end")
+    save(L2 / "t01_chest/images/chest.svg",
+         svg(w, h, b, "Переменная — сундук с табличкой: тип int, имя diamonds, внутри значение 5"))
+
+
+def assign():
+    w, h = 480, 330
+    fs = 20
+    cw = fs * CW
+    x0 = 240 - 12 * cw / 2
+    b = f'<rect x="120" y="16" width="240" height="46" rx="10" fill="{SURFACE}" stroke="{CARD_LINE}"/>'
+    b += code_line(x0, 46, [("xp", ORANGE), (" = ", INK), ("xp", ORANGE), (" + ", INK), ("5", GREEN), (";", INK)], fs)
+    b += f'<line x1="{x0:.0f}" y1="54" x2="{x0+2*cw:.0f}" y2="54" stroke="{ORANGE}" stroke-width="3"/>'
+    b += f'<line x1="{x0+5*cw:.0f}" y1="54" x2="{x0+11*cw:.0f}" y2="54" stroke="{BLUE}" stroke-width="3"/>'
+    b += f'<rect x="40" y="78" width="16" height="4" rx="2" fill="{ORANGE}"/>' + text(62, 85, "сюда — результат", 13.5, ORANGE, 600)
+    b += f'<rect x="262" y="78" width="16" height="4" rx="2" fill="{BLUE}"/>' + text(284, 85, "считается первым", 13.5, BLUE, 600)
+    s, y = 88, 160
+    b += sign_px(16 + s / 2, y - 44, "xp", 64) + chest_px(16, y, s, "10")
+    b += arrow(110, y + 44, 150, y + 44, ORANGE, 2.2)
+    b += badge(130, y + 22, 1)
+    b += f'<rect x="156" y="{y+12}" width="168" height="64" rx="10" fill="{SURFACE}" stroke="{CARD_LINE}"/>'
+    b += text(240, y + 38, "10 + 5", 19, INK, 700, font=MONO, anchor="middle")
+    b += text(240, y + 64, "= 15", 19, GREEN, 700, font=MONO, anchor="middle")
+    b += badge(240, y + 2, 2)
+    b += arrow(330, y + 44, 370, y + 44, ORANGE, 2.2)
+    b += badge(350, y + 22, 3)
+    b += sign_px(376 + s / 2, y - 44, "xp", 64) + chest_px(376, y, s, "15")
+    for x, t1, t2 in [(60, "1. достать", "из xp: 10"), (240, "2. посчитать", "10 + 5 = 15"), (420, "3. положить", "15 вместо 10")]:
+        b += text(x, y + s + 30, t1, 13.5, INK, 700, anchor="middle")
+        b += text(x, y + s + 49, t2, 13.5, MUTED, anchor="middle")
+    save(L2 / "t08_change/images/assign.svg",
+         svg(w, h, b, "xp = xp + 5: достать 10 из сундука, посчитать 15 и положить обратно вместо 10"))
+
+
+ALL = [roadmap, ide_layout, placeholder,
+       anatomy, run_img, print_vs_println, hotbar, escape_img, creeper, errors, comments,
+       chest, assign]
+
 if __name__ == "__main__":
-    roadmap(); ide_layout(); placeholder()
-    anatomy(); run_img(); print_vs_println(); hotbar(); escape_img(); creeper(); errors(); comments()
+    import sys
+    only = set(sys.argv[1:])  # можно перерисовать только нужные: python3 tools/images.py hotbar creeper
+    for theme in ("light", "dark"):
+        use_theme(theme)
+        for fn in ALL:
+            if not only or fn.__name__ in only:
+                fn()

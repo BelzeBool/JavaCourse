@@ -1,3 +1,4 @@
 custom_name: "Раздел 1. Основы языка"
 content:
   - l01_first_program
+  - l02_variables

@@ -5,3 +5,5 @@ files:
     visible: true
   - name: images/print-vs-println.svg
     visible: false
+  - name: images/print-vs-println_dark.svg
+    visible: false

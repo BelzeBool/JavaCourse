@@ -11,3 +11,5 @@ files:
     visible: false
   - name: images/creeper.svg
     visible: false
+  - name: images/creeper_dark.svg
+    visible: false

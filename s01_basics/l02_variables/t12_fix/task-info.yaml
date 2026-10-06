@@ -1,0 +1,16 @@
+type: edu
+custom_name: "Задача: почини сундуки"
+files:
+  - name: src/Main.java
+    visible: true
+    placeholders:
+      - offset: 73
+        length: 170
+        placeholder_text: |-
+          int torches = 64;
+                  int torches = 32;
+                  boolean isNight = "да";
+                  System.out.println("Факелов: " + Torches);
+                  System.out.println("Ночь: " + isNight);
+  - name: test/Tests.java
+    visible: false

@@ -20,3 +20,5 @@ files:
     visible: true
   - name: images/comments.svg
     visible: false
+  - name: images/comments_dark.svg
+    visible: false

@@ -1,5 +1,7 @@
 # Проверка курса на каждый push и pull request:
-# эталоны проходят тесты, стартовый код ученика — нет (tools/check_starters.py).
+# - эталоны проходят тесты, стартовый код ученика — нет (tools/check_starters.py);
+# - шаги не используют понятия из будущих уроков (tools/check_order.py);
+# - превью собирается, все картинки на месте (tools/preview.py).
 name: Проверка задач
 
 on:
@@ -18,5 +20,7 @@ jobs:
             21
             25
       - uses: gradle/actions/setup-gradle@v4
-      - run: pip install pyyaml
+      - run: pip install pyyaml markdown-it-py
+      - run: python3 tools/check_order.py
+      - run: python3 tools/preview.py
       - run: python3 tools/check_starters.py

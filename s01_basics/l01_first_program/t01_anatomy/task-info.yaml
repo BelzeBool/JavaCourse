@@ -7,3 +7,7 @@ files:
     visible: false
   - name: images/run.svg
     visible: false
+  - name: images/anatomy_dark.svg
+    visible: false
+  - name: images/run_dark.svg
+    visible: false

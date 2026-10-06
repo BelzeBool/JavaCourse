@@ -1,0 +1,5 @@
+type: theory
+custom_name: "Типы: что можно положить в сундук"
+files:
+  - name: src/Main.java
+    visible: true

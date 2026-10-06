@@ -1,0 +1,20 @@
+type: choice
+custom_name: "Вопрос: что не так с типом?"
+is_multiple_choice: false
+options:
+  - text: "int blocks = 64;"
+    is_correct: false
+  - text: "double health = 17.5;"
+    is_correct: false
+  - text: "boolean isNight = \"нет\";"
+    is_correct: true
+  - text: "char key = 'E';"
+    is_correct: false
+  - text: "String name = \"Алекс\";"
+    is_correct: false
+message_correct: "Верно! В boolean кладут только true или false. \"нет\" в кавычках — это текст, ему нужен тип String."
+message_incorrect: "Не совсем. Проверь каждую строку: подходит ли значение к типу? В одной из них в сундук для «да/нет» положили текст."
+local_check: true
+files:
+  - name: src/Main.java
+    visible: true

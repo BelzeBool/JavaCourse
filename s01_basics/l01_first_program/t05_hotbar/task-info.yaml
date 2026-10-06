@@ -11,3 +11,5 @@ files:
     visible: false
   - name: images/hotbar.svg
     visible: false
+  - name: images/hotbar_dark.svg
+    visible: false

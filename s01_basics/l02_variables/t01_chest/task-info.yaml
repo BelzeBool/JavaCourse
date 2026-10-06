@@ -1,0 +1,9 @@
+type: theory
+custom_name: "Переменная — сундук с табличкой"
+files:
+  - name: src/Main.java
+    visible: true
+  - name: images/chest.svg
+    visible: false
+  - name: images/chest_dark.svg
+    visible: false

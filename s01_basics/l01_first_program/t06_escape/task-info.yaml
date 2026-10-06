@@ -11,3 +11,5 @@ files:
     visible: false
   - name: images/escape.svg
     visible: false
+  - name: images/escape_dark.svg
+    visible: false
