@@ -9,7 +9,7 @@ pluginManagement {
 
 plugins {
     // Позволяет Gradle самому скачать нужную версию JDK, если её нет на компьютере
-    id("org.gradle.toolchains.foojay-resolver-convention") version "0.9.0"
+    id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
 }
 
 // Каждая папка задачи (где есть src/) становится отдельным модулем

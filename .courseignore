@@ -2,3 +2,6 @@ README.md
 PROGRAM.md
 tools
 /.run
+.gitignore
+.github
+docs

@@ -1,3 +1,5 @@
+import java.io.ByteArrayOutputStream
+
 // Сборка курса «Java с нуля: от первой строчки до своего мода»
 // Каждая папка задачи (где есть src/) — отдельный Gradle-модуль, см. settings.gradle.kts.
 
@@ -73,7 +75,25 @@ configure(subprojects.filter { it.name != "common" }) {
         "testImplementation"(project(":common"))
     }
 
-    tasks.register<Exec>("run") {
-        // Пустая задача: плагину нужно, чтобы она существовала
+    // Задача run: её вызывает плагин для задач типа output (проверка по выводу без тестов).
+    // Плагин передаёт -PmainClass=... и -PeducationalRun=true и читает вывод по строкам #educational_plugin.
+    apply(plugin = "application")
+    extensions.configure<JavaApplication> {
+        mainClass.set(providers.gradleProperty("mainClass").orElse("Main"))
+    }
+    tasks.named<JavaExec>("run") {
+        jvmArgs("-Dfile.encoding=UTF-8", "-Dstdout.encoding=UTF-8")
+        standardInput = System.`in`
+        if (providers.gradleProperty("educationalRun").orNull == "true") {
+            val runOutput = ByteArrayOutputStream()
+            standardOutput = runOutput
+            doLast {
+                println("#educational_plugin_checker_version 1")
+                val separator = System.lineSeparator()
+                runOutput.toString(Charsets.UTF_8)
+                    .split(Regex("(?<=$separator)|(?=$separator)"))
+                    .forEach { println("#educational_plugin$it") }
+            }
+        }
     }
 }
