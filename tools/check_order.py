@@ -67,8 +67,10 @@ def task_code(task_dir: Path):
         text = md.read_text(encoding="utf-8")
         for m in re.finditer(r"```java\s*\n([\s\S]*?)```", text):
             parts.append(("task.md", m.group(1)))
-        for m in re.finditer(r"<pre\b[^>]*>([\s\S]*?)</pre>", text):
-            inner = html.unescape(re.sub(r"<[^>]+>", "", m.group(1)))
+        for m in re.finditer(r"<pre\b([^>]*)>([\s\S]*?)</pre>", text):
+            if re.search(r"k-console|k-msg", m.group(1)):
+                continue  # вывод программы и сообщения компилятора — не код
+            inner = html.unescape(re.sub(r"<[^>]+>", "", m.group(2)))
             if re.search(r"error:|warning:", inner) and "\n" not in inner.strip():
                 continue  # сообщение компилятора, а не код
             parts.append(("task.md", inner))

@@ -1,0 +1,5 @@
+type: theory
+custom_name: "Итог урока"
+files:
+  - name: src/Main.java
+    visible: true

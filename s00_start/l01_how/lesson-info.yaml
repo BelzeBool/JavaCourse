@@ -2,3 +2,4 @@ custom_name: "0.1 Как устроен курс"
 content:
   - t01_welcome
   - t02_first_check
+  - t03_troubles
