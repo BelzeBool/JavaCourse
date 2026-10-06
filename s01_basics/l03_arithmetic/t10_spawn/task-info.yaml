@@ -1,0 +1,15 @@
+type: edu
+custom_name: "Задача: далеко ли до спавна"
+files:
+  - name: src/Main.java
+    visible: true
+    placeholders:
+      - offset: 179
+        length: 287
+        placeholder_text: "// Посчитай путь по X, по Z и по прямой и напечатай"
+  - name: test/Tests.java
+    visible: false
+  - name: images/spawn.svg
+    visible: false
+  - name: images/spawn_dark.svg
+    visible: false

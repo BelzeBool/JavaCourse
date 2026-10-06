@@ -1,0 +1,18 @@
+type: choice
+custom_name: "Вопрос: что стало с зомби?"
+is_multiple_choice: false
+options:
+  - text: "zombie Zombie"
+    is_correct: true
+  - text: "ZOMBIE ZOMBIE"
+    is_correct: false
+  - text: "Zombie Zombie"
+    is_correct: false
+  - text: "zombie zombie"
+    is_correct: false
+message_correct: "Верно! Строка в mob не меняется. Вторая строка кода делает \"ZOMBIE\" и сразу теряет: результат никуда не положили. А replace тоже делает новую строку \"Zombie\", но её кладут в title — поэтому она не пропадает и печатается второй."
+message_incorrect: "Не совсем. Вспомни главное правило: метод не меняет строку, а возвращает новую. Найди, в какой строке кода результат метода кладут в переменную, а в какой — нет. Что тогда лежит в mob к моменту печати?"
+local_check: true
+files:
+  - name: src/Main.java
+    visible: true

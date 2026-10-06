@@ -1,0 +1,11 @@
+type: edu
+custom_name: "Задача: стаки"
+files:
+  - name: src/Main.java
+    visible: true
+    placeholders:
+      - offset: 73
+        length: 187
+        placeholder_text: "// Напиши код здесь"
+  - name: test/Tests.java
+    visible: false

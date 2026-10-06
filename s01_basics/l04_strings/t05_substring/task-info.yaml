@@ -1,0 +1,9 @@
+type: theory
+custom_name: "Найти и вырезать: indexOf и substring"
+files:
+  - name: src/Main.java
+    visible: true
+  - name: images/substring.svg
+    visible: false
+  - name: images/substring_dark.svg
+    visible: false

@@ -1,0 +1,9 @@
+type: theory
+custom_name: "Порядок действий и скобки"
+files:
+  - name: src/Main.java
+    visible: true
+  - name: images/order.svg
+    visible: false
+  - name: images/order_dark.svg
+    visible: false

@@ -1,0 +1,9 @@
+type: theory
+custom_name: "Когда int мало: переполнение"
+files:
+  - name: src/Main.java
+    visible: true
+  - name: images/overflow.svg
+    visible: false
+  - name: images/overflow_dark.svg
+    visible: false

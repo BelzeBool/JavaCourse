@@ -1,0 +1,16 @@
+custom_name: "1.4 Строки"
+content:
+  - t01_concat
+  - t02_quiz_concat
+  - t03_cells
+  - t04_nick
+  - t05_substring
+  - t06_item_id
+  - t07_new_string
+  - t08_quiz_immutable
+  - t09_equals
+  - t10_quiz_equals
+  - t11_format
+  - t12_stats
+  - t13_fix_id
+  - t14_recap

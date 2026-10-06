@@ -1,0 +1,20 @@
+type: choice
+custom_name: "Вопрос: где получится 2.5?"
+is_multiple_choice: true
+options:
+  - text: "5 / 2"
+    is_correct: false
+  - text: "5.0 / 2"
+    is_correct: true
+  - text: "5 / 2.0"
+    is_correct: true
+  - text: "(double) 5 / 2"
+    is_correct: true
+  - text: "(double) (5 / 2)"
+    is_correct: false
+message_correct: "Верно! Дробь получается, когда в момент деления хотя бы одно число дробное: 5.0, 2.0 или 5 после (double). В 5 / 2 оба целые — выйдет 2. А в (double) (5 / 2) сначала считаются скобки: целое деление даёт 2, и только потом оно превращается в 2.0."
+message_incorrect: "Не совсем. Подходящих вариантов несколько. Для каждого спроси: когда Java делит, хотя бы одно число дробное? Если оба целые, дробь отрезается. И скобки считаются первыми — даже если перед ними стоит (double)."
+local_check: true
+files:
+  - name: src/Main.java
+    visible: true

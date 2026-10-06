@@ -1,0 +1,11 @@
+type: edu
+custom_name: "Задача: ID предмета"
+files:
+  - name: src/Main.java
+    visible: true
+    placeholders:
+      - offset: 121
+        length: 234
+        placeholder_text: "// Разрежи id по двоеточию и напечатай обе части"
+  - name: test/Tests.java
+    visible: false

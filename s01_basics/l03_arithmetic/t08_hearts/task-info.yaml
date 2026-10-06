@@ -1,0 +1,16 @@
+type: edu
+custom_name: "Задача: почини сердечки"
+files:
+  - name: src/Main.java
+    visible: true
+    placeholders:
+      - offset: 73
+        length: 206
+        placeholder_text: |-
+          int health = 17;
+                  double hearts = health / 2;
+                  int fullHearts = hearts;
+                  System.out.println("Сердечек: " + hearts);
+                  System.out.println("Полных сердечек: " + fullHearts);
+  - name: test/Tests.java
+    visible: false

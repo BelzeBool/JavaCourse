@@ -1,0 +1,18 @@
+type: choice
+custom_name: "Вопрос: как сохранить большое число?"
+is_multiple_choice: false
+options:
+  - text: "int area = side * side;"
+    is_correct: false
+  - text: "long area = side * side;"
+    is_correct: false
+  - text: "long area = (long) side * side;"
+    is_correct: true
+  - text: "long area = 2500000000;"
+    is_correct: false
+message_correct: "Верно! (long) превращает side в long ещё до умножения, поэтому всё умножение идёт в long и 2 500 000 000 помещается. В long area = side * side умножаются два int — переполнение случается раньше, чем результат попадает в сундук. А 2500000000 без L Java считает int и не компилирует: integer number too large."
+message_incorrect: "Не совсем. Правая часть считается до того, как результат кладётся в сундук: какого типа числа в момент умножения? Сундук long слева сам по себе не спасает. И вспомни, что Java говорит про длинное число без L."
+local_check: true
+files:
+  - name: src/Main.java
+    visible: true

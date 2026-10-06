@@ -1,0 +1,11 @@
+type: edu
+custom_name: "Задача: таблица игроков"
+files:
+  - name: src/Main.java
+    visible: true
+    placeholders:
+      - offset: 335
+        length: 302
+        placeholder_text: "// Напечатай заголовок и три строки таблицы"
+  - name: test/Tests.java
+    visible: false

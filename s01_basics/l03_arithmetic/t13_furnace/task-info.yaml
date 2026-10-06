@@ -1,0 +1,11 @@
+type: edu
+custom_name: "Задача: уголь для печей"
+files:
+  - name: src/Main.java
+    visible: true
+    placeholders:
+      - offset: 142
+        length: 292
+        placeholder_text: "// Посчитай уголь для каждой печи и напечатай"
+  - name: test/Tests.java
+    visible: false

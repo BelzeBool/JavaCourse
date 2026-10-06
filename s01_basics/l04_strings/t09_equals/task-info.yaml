@@ -1,0 +1,5 @@
+type: theory
+custom_name: "Вопросы к строке: equals и другие"
+files:
+  - name: src/Main.java
+    visible: true

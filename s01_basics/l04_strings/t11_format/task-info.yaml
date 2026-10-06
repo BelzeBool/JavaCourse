@@ -1,0 +1,9 @@
+type: theory
+custom_name: "Шаблон с пропусками: String.format"
+files:
+  - name: src/Main.java
+    visible: true
+  - name: images/format.svg
+    visible: false
+  - name: images/format_dark.svg
+    visible: false

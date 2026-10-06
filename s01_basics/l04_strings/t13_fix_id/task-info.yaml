@@ -1,0 +1,20 @@
+type: edu
+custom_name: "Задача: почини генератор ID"
+files:
+  - name: src/Main.java
+    visible: true
+    placeholders:
+      - offset: 73
+        length: 409
+        placeholder_text: |-
+          String modId = "ruby_mod";
+                  String title = " Ruby Sword ";
+                  title.strip();
+                  String path = title.toLowerCase;
+                  path = path.replace("_", " ");
+                  String id = modId + ":" + path;
+                  System.out.println("ID: " + id);
+                  System.out.println("Ключ перевода: item." + modId + "." + path);
+                  System.out.println("Проверка: " + id.equals("ruby_mod:ruby_sword"));
+  - name: test/Tests.java
+    visible: false

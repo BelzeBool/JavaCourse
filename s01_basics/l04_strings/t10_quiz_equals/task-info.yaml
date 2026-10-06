@@ -1,0 +1,20 @@
+type: choice
+custom_name: "Вопрос: где true?"
+is_multiple_choice: true
+options:
+  - text: "item.equals(\"diamond_sword\")"
+    is_correct: false
+  - text: "item.equalsIgnoreCase(\"DIAMOND_SWORD\")"
+    is_correct: true
+  - text: "item.endsWith(\"Sword\")"
+    is_correct: true
+  - text: "item.contains(\"sword\")"
+    is_correct: false
+  - text: "item.equals(\"Diamond_Sword \")"
+    is_correct: false
+message_correct: "Верно! equalsIgnoreCase не различает заглавные и строчные, а endsWith(\"Sword\") совпадает с концом строки буква в букву. Остальные дают false: equals и contains различают D и d, S и s, а пробел в конце — тоже символ, которого в item нет."
+message_incorrect: "Не совсем. Сверь каждое выражение по двум признакам. Регистр: equals, contains и endsWith различают заглавные и строчные, equalsIgnoreCase — нет. Пробелы: пробел — такой же символ, как буква. Верных вариантов больше одного."
+local_check: true
+files:
+  - name: src/Main.java
+    visible: true

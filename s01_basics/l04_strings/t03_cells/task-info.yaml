@@ -1,0 +1,9 @@
+type: theory
+custom_name: "Строка — ряд клеток с номерами"
+files:
+  - name: src/Main.java
+    visible: true
+  - name: images/cells.svg
+    visible: false
+  - name: images/cells_dark.svg
+    visible: false

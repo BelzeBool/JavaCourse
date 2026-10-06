@@ -1,0 +1,5 @@
+type: theory
+custom_name: "Деление: целое и дробное"
+files:
+  - name: src/Main.java
+    visible: true

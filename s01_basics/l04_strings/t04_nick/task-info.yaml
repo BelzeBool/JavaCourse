@@ -1,0 +1,11 @@
+type: edu
+custom_name: "Задача: ник игрока"
+files:
+  - name: src/Main.java
+    visible: true
+    placeholders:
+      - offset: 111
+        length: 299
+        placeholder_text: "// Напечатай пять строк про nick"
+  - name: test/Tests.java
+    visible: false

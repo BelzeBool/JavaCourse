@@ -1,0 +1,18 @@
+type: choice
+custom_name: "Вопрос: 10 или 73?"
+is_multiple_choice: false
+options:
+  - text: "10 и 73"
+    is_correct: true
+  - text: "10 и 10"
+    is_correct: false
+  - text: "73 и 73"
+    is_correct: false
+  - text: "73 и 10"
+    is_correct: false
+message_correct: "Верно! Первый + видит два числа: 7 + 3 = 10. Дальше появляется строка \" и \" — и с этого места все + только клеят: \"10 и \" + 7 даёт \"10 и 7\", потом + 3 даёт \"10 и 73\"."
+message_incorrect: "Не совсем. Пройди по знакам + слева направо и для каждого посмотри, что у него слева и справа: два числа — сложение, хоть одна строка — склейка. И помни: результат склейки — тоже строка."
+local_check: true
+files:
+  - name: src/Main.java
+    visible: true

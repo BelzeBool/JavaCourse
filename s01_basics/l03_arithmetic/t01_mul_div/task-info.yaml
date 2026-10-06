@@ -1,0 +1,9 @@
+type: theory
+custom_name: "Умножение, деление и остаток"
+files:
+  - name: src/Main.java
+    visible: true
+  - name: images/stacks.svg
+    visible: false
+  - name: images/stacks_dark.svg
+    visible: false
