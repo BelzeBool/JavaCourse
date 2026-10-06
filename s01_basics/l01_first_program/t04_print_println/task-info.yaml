@@ -1,0 +1,7 @@
+type: theory
+custom_name: "print и println"
+files:
+  - name: src/Main.java
+    visible: true
+  - name: images/print-vs-println.svg
+    visible: false

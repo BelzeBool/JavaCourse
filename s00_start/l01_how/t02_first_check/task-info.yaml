@@ -1,0 +1,13 @@
+type: edu
+custom_name: "Первая проверка"
+files:
+  - name: src/Main.java
+    visible: true
+    placeholders:
+      - offset: 93
+        length: 8
+        placeholder_text: "???"
+  - name: test/Tests.java
+    visible: false
+  - name: images/placeholder.svg
+    visible: false

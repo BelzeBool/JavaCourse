@@ -1,0 +1,16 @@
+type: edu
+custom_name: "Читаем ошибки"
+files:
+  - name: src/Main.java
+    visible: true
+    placeholders:
+      - offset: 73
+        length: 124
+        placeholder_text: |-
+          System.out.println("Ищу алмазы...")
+                  system.out.println("Нашёл 3 алмаза!");
+                  System.out.println("Иду домой);
+  - name: test/Tests.java
+    visible: false
+  - name: images/errors.svg
+    visible: false

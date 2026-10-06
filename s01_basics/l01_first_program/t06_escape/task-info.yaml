@@ -1,0 +1,13 @@
+type: edu
+custom_name: "Особые символы в строках"
+files:
+  - name: src/Main.java
+    visible: true
+    placeholders:
+      - offset: 73
+        length: 100
+        placeholder_text: "System.out.println(\"\");"
+  - name: test/Tests.java
+    visible: false
+  - name: images/escape.svg
+    visible: false

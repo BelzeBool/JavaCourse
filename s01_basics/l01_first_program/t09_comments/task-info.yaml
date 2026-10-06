@@ -1,0 +1,22 @@
+type: choice
+custom_name: "Комментарии"
+is_multiple_choice: true
+options:
+  - text: "A: Верстак"
+    is_correct: false
+  - text: "B: Шахта"
+    is_correct: true
+  - text: "C: Ферма"
+    is_correct: false
+  - text: "D: Незер"
+    is_correct: false
+  - text: "E: Дом"
+    is_correct: true
+message_correct: "Точно! A выключена через //, C и D — внутри /* */. Комментарий «иду копать» после B не мешает команде выполниться."
+message_incorrect: "Не совсем. // выключает всё до конца строки, а /* … */ — всё между скобками, даже на нескольких строках. Комментарий после команды саму команду не отключает."
+local_check: true
+files:
+  - name: src/Main.java
+    visible: true
+  - name: images/comments.svg
+    visible: false

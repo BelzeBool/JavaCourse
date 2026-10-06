@@ -1,0 +1,9 @@
+type: theory
+custom_name: "Добро пожаловать"
+files:
+  - name: src/Main.java
+    visible: true
+  - name: images/roadmap.svg
+    visible: false
+  - name: images/ide-layout.svg
+    visible: false

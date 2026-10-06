@@ -1,0 +1,21 @@
+type: marketplace
+title: "Java с нуля: от первой строчки до своего мода"
+language: Russian
+summary: |-
+  Java с полного нуля — и сразу с прицелом на моды для Minecraft.<br>
+  Короткая теория прямо в IntelliJ IDEA, схемы и картинки, а после каждого шага — задачи
+  с автоматической проверкой по кнопке <b>Check</b>. Все задачи в тематике Майнкрафта,
+  а с третьего раздела — мод-чекпоинты в настоящем моде.
+programming_language: Java
+content:
+  - s00_start
+  - s01_basics
+environment_settings:
+  jvm_language_level: JDK_21
+additional_files:
+  - name: common/src/main/java/course/Check.java
+  - name: common/build.gradle.kts
+  - name: build.gradle.kts
+  - name: gradle.properties
+  - name: settings.gradle.kts
+yaml_version: 2

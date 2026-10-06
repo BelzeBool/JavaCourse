@@ -1,0 +1,18 @@
+type: choice
+custom_name: "Вопрос: в каком порядке?"
+is_multiple_choice: false
+options:
+  - text: "1. Ставлю верстак"
+    is_correct: false
+  - text: "3. Иду в шахту"
+    is_correct: true
+  - text: "Java отсортирует строки по номерам, порядок будет 1, 2, 3"
+    is_correct: false
+  - text: "Порядок каждый раз случайный"
+    is_correct: false
+message_correct: "Верно! Команды выполняются строго сверху вниз. Номера в тексте для Java — просто символы, она их не читает."
+message_incorrect: "Не совсем. Java не понимает смысл текста в кавычках и ничего не переставляет: команды выполняются строго сверху вниз, в том порядке, в каком написаны."
+local_check: true
+files:
+  - name: src/Main.java
+    visible: true

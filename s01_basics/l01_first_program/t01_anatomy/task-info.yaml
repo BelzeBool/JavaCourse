@@ -1,0 +1,9 @@
+type: theory
+custom_name: "Из чего состоит программа"
+files:
+  - name: src/Main.java
+    visible: true
+  - name: images/anatomy.svg
+    visible: false
+  - name: images/run.svg
+    visible: false

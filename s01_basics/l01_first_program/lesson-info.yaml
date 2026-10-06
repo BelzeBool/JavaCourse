@@ -1,0 +1,11 @@
+custom_name: "1.1 Первая программа"
+content:
+  - t01_anatomy
+  - t02_quiz_order
+  - t03_hello
+  - t04_print_println
+  - t05_hotbar
+  - t06_escape
+  - t07_creeper
+  - t08_errors
+  - t09_comments
